@@ -284,7 +284,10 @@ struct VBottomSheet<Content>: View
             body: { isInternallyPresented = false },
             completion: {
                 presentationMode.dismiss()
-                DispatchQueue.main.async(execute: { dismissHandler?() })
+                DispatchQueue.main.async(execute: {
+                    dismissHandler?()
+                    heightState = .none
+                })
             }
         )
     }
@@ -295,7 +298,10 @@ struct VBottomSheet<Content>: View
             body: { isInternallyPresented = false },
             completion: {
                 presentationMode.dismiss()
-                DispatchQueue.main.async(execute: { dismissHandler?() })
+                DispatchQueue.main.async(execute: {
+                    dismissHandler?()
+                    heightState = .none
+                })
             }
         )
     }
@@ -306,7 +312,10 @@ struct VBottomSheet<Content>: View
             body: { isInternallyPresented = false },
             completion: {
                 presentationMode.externalDismissCompletion()
-                DispatchQueue.main.async(execute: { dismissHandler?() })
+                DispatchQueue.main.async(execute: {
+                    dismissHandler?()
+                    heightState = .none
+                })
             }
         )
     }
