@@ -51,6 +51,7 @@ extension View {
     public func vBottomSheet(
         id: String,
         uiModel: VBottomSheetUIModel = .init(),
+        heightState: Binding<SheetHeight>, // External control for sheet height
         isPresented: Binding<Bool>,
         onPresent presentHandler: (() -> Void)? = nil,
         onDismiss dismissHandler: (() -> Void)? = nil,
@@ -63,6 +64,7 @@ extension View {
                 content: {
                     VBottomSheet<_>(
                         uiModel: uiModel,
+                        heightState: heightState,
                         onPresent: presentHandler,
                         onDismiss: dismissHandler,
                         content: content
@@ -119,6 +121,7 @@ extension View {
     public func vBottomSheet<Item>(
         id: String,
         uiModel: VBottomSheetUIModel = .init(),
+        heightState: Binding<SheetHeight>, // External control for sheet height
         item: Binding<Item?>,
         onPresent presentHandler: (() -> Void)? = nil,
         onDismiss dismissHandler: (() -> Void)? = nil,
@@ -135,6 +138,7 @@ extension View {
                 content: {
                     VBottomSheet<_>(
                         uiModel: uiModel,
+                        heightState: heightState,
                         onPresent: presentHandler,
                         onDismiss: dismissHandler,
                         content: {

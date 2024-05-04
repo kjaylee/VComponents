@@ -8,11 +8,16 @@
 import SwiftUI
 import VCore
 
+public enum SheetHeight {
+    case min, ideal, max, none
+}
+
 // MARK: - V Bottom Sheet
 @available(iOS 14.0, *)
 @available(macOS 11.0, *)@available(macOS, unavailable) // No `View.presentationHost(...)` support
 @available(tvOS 16.0, *)@available(tvOS, unavailable) // No `View.presentationHost(...)` support
 @available(watchOS 7.0, *)@available(watchOS, unavailable) // No `View.presentationHost(...)` support
+
 struct VBottomSheet<Content>: View
     where Content: View
 {
@@ -43,16 +48,19 @@ struct VBottomSheet<Content>: View
     @State private var offsetBeforeDrag: CGFloat? // Used for adding to translation
     @State private var currentDragValue: DragGesture.Value? // Used for storing "last" value for writing in `previousDragValue`. Equals to `dragValue` in methods.
     @State private var previousDragValue: DragGesture.Value? // Used for calculating velocity
+    @Binding var heightState: SheetHeight // Binding to external control
     
     // MARK: Initializers
     init(
         uiModel: VBottomSheetUIModel,
-        onPresent presentHandler: (() -> Void)?,
-        onDismiss dismissHandler: (() -> Void)?,
+        heightState: Binding<SheetHeight>, // External control for sheet height
+        onPresent presentHandler: (() -> Void)? = nil,
+        onDismiss dismissHandler: (() -> Void)? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) {
         Self.assertUIModel(uiModel)
         
+        self._heightState = heightState
         self.uiModel = uiModel
         self.presentHandler = presentHandler
         self.dismissHandler = dismissHandler
@@ -76,7 +84,24 @@ struct VBottomSheet<Content>: View
         .onChange(of: interfaceOrientationChangeObserver.orientation, perform: { _ in resetHeightFromOrientationChange() })
         .onPreferenceChange(VBottomSheetHeaderLabelPreferenceKey.self, perform: {
             headerLabel = $0
-        })
+        })        
+        .onChange(of: heightState, perform: adjustHeight) // Listen to changes of heightState
+    }
+
+    // This function adjusts the offset based on the current heightState with animation
+    private func adjustHeight(to state: SheetHeight) {
+        withAnimation(.easeInOut(duration: 0.3)) {  // 애니메이션 적용
+            switch state {
+            case .min:
+                offset = uiModel.layout.sizes._current.size.heights.minOffset
+            case .ideal:
+                offset = uiModel.layout.sizes._current.size.heights.idealOffset
+            case .max:
+                offset = uiModel.layout.sizes._current.size.heights.maxOffset
+            case .none:
+                offset = uiModel.layout.sizes._current.size.heights.hiddenOffset
+            }
+        }
     }
     
     private var dimmingView: some View {
@@ -347,6 +372,25 @@ struct VBottomSheet<Content>: View
                 velocity: dragValue.velocity(inRelationTo: previousDragValue).height
             ))
         }
+        // Update the SheetHeight state based on the nearest offset after drag ends
+        updateSheetHeightAfterDrag()
+    }
+
+    // This function updates the SheetHeight based on the current offset
+    private func updateSheetHeightAfterDrag() {
+        let minOffset = uiModel.layout.sizes._current.size.heights.minOffset
+        let idealOffset = uiModel.layout.sizes._current.size.heights.idealOffset
+        let maxOffset = uiModel.layout.sizes._current.size.heights.maxOffset
+        
+        let closestHeight = [minOffset, idealOffset, maxOffset].min(by: { abs($0 - offset) < abs($1 - offset) })!
+        
+        if closestHeight == minOffset {
+            heightState = .min
+        } else if closestHeight == idealOffset {
+            heightState = .ideal
+        } else if closestHeight == maxOffset {
+            heightState = .max
+        }
     }
     
     private func animateOffsetOrPullDismissFromSnapAction(_ snapAction: VBottomSheetSnapAction) {
@@ -423,6 +467,7 @@ struct VBottomSheet_Previews: PreviewProvider {
                         uiModel.animations.appear = nil
                         return uiModel
                     }(),
+                    heightState: .constant(.none),
                     onPresent: nil,
                     onDismiss: nil,
                     content: content
@@ -450,6 +495,7 @@ struct VBottomSheet_Previews: PreviewProvider {
                         uiModel.animations.appear = nil
                         return uiModel
                     }(),
+                    heightState: .constant(.none),
                     onPresent: nil,
                     onDismiss: nil,
                     content: content
@@ -477,6 +523,7 @@ struct VBottomSheet_Previews: PreviewProvider {
                         uiModel.animations.appear = nil
                         return uiModel
                     }(),
+                    heightState: .constant(.none),
                     onPresent: nil,
                     onDismiss: nil,
                     content: content
@@ -504,6 +551,7 @@ struct VBottomSheet_Previews: PreviewProvider {
                         uiModel.animations.appear = nil
                         return uiModel
                     }(),
+                    heightState: .constant(.none),
                     onPresent: nil,
                     onDismiss: nil,
                     content: content
@@ -531,6 +579,7 @@ struct VBottomSheet_Previews: PreviewProvider {
                         uiModel.animations.appear = nil
                         return uiModel
                     }(),
+                    heightState: .constant(.none),
                     onPresent: nil,
                     onDismiss: nil,
                     content: content
@@ -548,6 +597,7 @@ struct VBottomSheet_Previews: PreviewProvider {
                         uiModel.animations.appear = nil
                         return uiModel
                     }(),
+                    heightState: .constant(.none),
                     onPresent: nil,
                     onDismiss: nil,
                     content: content
@@ -566,6 +616,7 @@ struct VBottomSheet_Previews: PreviewProvider {
                         uiModel.animations.appear = nil
                         return uiModel
                     }(),
+                    heightState: .constant(.none),
                     onPresent: nil,
                     onDismiss: nil,
                     content: {
@@ -596,6 +647,7 @@ struct VBottomSheet_Previews: PreviewProvider {
                         uiModel.animations.appear = nil
                         return uiModel
                     }(),
+                    heightState: .constant(.none),
                     onPresent: nil,
                     onDismiss: nil,
                     content: { ColorBook.accentBlue }
@@ -614,6 +666,7 @@ struct VBottomSheet_Previews: PreviewProvider {
                         uiModel.animations.appear = nil
                         return uiModel
                     }(),
+                    heightState: .constant(.none),
                     onPresent: nil,
                     onDismiss: nil,
                     content: { ColorBook.accentBlue }
