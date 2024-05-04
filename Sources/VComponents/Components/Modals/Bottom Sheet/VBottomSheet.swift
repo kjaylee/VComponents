@@ -286,7 +286,6 @@ struct VBottomSheet<Content>: View
                 presentationMode.dismiss()
                 DispatchQueue.main.async(execute: {
                     dismissHandler?()
-                    heightState = .none
                 })
             }
         )
@@ -300,7 +299,6 @@ struct VBottomSheet<Content>: View
                 presentationMode.dismiss()
                 DispatchQueue.main.async(execute: {
                     dismissHandler?()
-                    heightState = .none
                 })
             }
         )
@@ -314,7 +312,6 @@ struct VBottomSheet<Content>: View
                 presentationMode.externalDismissCompletion()
                 DispatchQueue.main.async(execute: {
                     dismissHandler?()
-                    heightState = .none
                 })
             }
         )
@@ -399,6 +396,8 @@ struct VBottomSheet<Content>: View
             heightState = .ideal
         } else if closestHeight == maxOffset {
             heightState = .max
+        } else {
+            heightState = .none
         }
     }
     
